@@ -1,0 +1,52 @@
+#include <IRremote.h>
+#include <Servo.h>
+
+int RECV_PIN = 11;
+boolean turn;
+
+Servo myServo;
+int pos;
+
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+
+void setup() {
+  //pinMode(buzzer, OUTPUT);
+  Serial.begin(9600);
+  irrecv.enableIRIn();
+  myServo.attach(9);
+
+}
+
+void loop() {
+  if (irrecv.decode(&results)) {
+    Serial.println(results.value, HEX);
+    //once receive code from power button, the state of LED is changed from HIGH to LOW or from LOW to HIGH.
+    if (results.value == 0xFD00FF) {
+      turn = !turn;
+      //reverse
+      if (turn) {
+        turnServo();
+      }
+      else {
+        myServo.write(0);
+      }
+    }
+    irrecv.resume();
+  }
+}
+
+void turnServo() {
+  for (pos = 0; pos < 180; pos += 1) {
+    //servo turns from 0 to 180 in steps of 1 degree
+    myServo.write(pos); //tell servo to go to position in variable 'pos'
+    delay(15);
+    //wts 15ms for the servo to reach the position
+  }
+  for (pos = 180; pos >= 1; pos -= 1) {
+    // servo turns from 180 to 0 in steps of 1 degree
+    myServo.write(pos); //tell servo to go to position in variable 'pos'
+    delay(15);
+    //waits 15ms for the servo to reach the position
+  }
+}
